@@ -1,0 +1,41 @@
+version: '3'
+services:
+  # webサーバー
+  web:
+    build: ./nginx
+    ports:
+      - '80:80'
+    # phpを使用するためにリンク
+    links:
+      - php-fpm
+      #phpとボリュームを共有
+    volumes:
+      - ./data:/usr/share/nginx/html
+  #php
+  php-fpm:
+    build: ./php-fpm
+    links:
+      - db
+    volumes:
+      - ./data:/usr/share/nginx/html
+  #データベース
+  db:
+    build: ./mysql
+    environment:
+      # データベース環境の設定
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: docker_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: mysqlpass
+  #PHPMYADMIN
+  phpmyadmin:
+    build: ./phpmyadmin
+    depends_on:
+      - db
+    ports:
+      - '8081:80'
+    environment:
+      - PMA_HOSTS=db
+      - PMA_PASSWORD=rootpass
+    volumes:
+      - ./phpmyadmin/sessions:/sessions
